@@ -58,6 +58,31 @@ def test_r_to_lla_example_3_3():
 
 
 #########################################################################################################
+#               RSW
+#########################################################################################################
+
+
+def test_dcm_rsw_eci_vallado():
+    """Vallado 4e p. 115 -- reuses the same r/v used in TestRvToCoes.test_vallado."""
+    r = np.array([6524.834, 6862.875, 6448.296])  # km
+    v = np.array([4.901327, 5.533756, -1.976341])  # km/s
+
+    C = Trans.dcm_rsw_eci(r, v)
+
+    # Rotation matrix
+    assert np.linalg.det(C) == pytest.approx(1, abs=1e-9)
+
+    r_rsw = C @ r
+    v_rsw = C @ v
+
+    # Radial component carries the full position magnitude, S/W components are zero by construction
+    assert np.allclose(r_rsw, [norm(r), 0.0, 0.0], atol=1e-9)
+
+    # Velocity always lies in the orbital plane, so it has no cross-track (W) component
+    assert v_rsw[2] == pytest.approx(0.0, abs=1e-9)
+
+
+#########################################################################################################
 #               ITRF
 #########################################################################################################
 

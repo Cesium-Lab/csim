@@ -1,6 +1,7 @@
 """Non-COES transformations"""
 
 import numpy as np
+from numpy.linalg import norm
 
 from ..world import R_EARTH, R_EARTH_POLAR, ECC_EARTH
 from ..constants import DEG_TO_RAD, SEC_TO_DAY, ARCSEC_TO_RAD
@@ -112,6 +113,34 @@ def r_to_surface_lla(r_ecef: np.ndarray):
 #     h_ellp = (r_horizontal_sat - a*t)*np.cos(lat_gd) + (rk-b)*np.sin(lat_gd)
 
 #     return (lat_gd, lon, h_ellp)
+
+
+####################################################################################################
+#               RSW
+####################################################################################################
+
+
+def dcm_rsw_eci(r_eci: np.ndarray, v_eci: np.ndarray) -> np.ndarray:
+    """Radial/along-track/cross-track (RSW) frame DCM (ECI -> RSW):
+    `r_rsw = dcm_rsw_eci(r_eci, v_eci) @ r_eci`
+
+    Rows are the RSW basis vectors `[r_hat, s_hat, w_hat]`, each expressed in ECI. \\
+    Vallado 4e p. 157-158 (`rv2rsw`)
+
+    Args:
+        r_eci (np.ndarray): Position of satellite [m] or [km] (ECI)
+        v_eci (np.ndarray): Velocity of satellite [m/s] or [km/s] (ECI)
+
+    Returns:
+        np.ndarray: 3x3 rotation matrix (ECI -> RSW)
+    """
+    r_hat = r_eci / norm(r_eci)
+    w_vec = np.cross(r_eci, v_eci)
+    w_hat = w_vec / norm(w_vec)
+    s_hat = np.cross(w_hat, r_hat)
+
+    return np.array([r_hat, s_hat, w_hat])
+
 
 ################################################################################
 #               ITRF <--> GCRS

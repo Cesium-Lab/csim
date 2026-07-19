@@ -128,10 +128,10 @@ def vmap_rigid_body_step_fn(
 ) -> Callable[[float, jnp.ndarray], jnp.ndarray]:
     """Same dynamics as rigid_body_step_fn, but batched: `state` is (batch, 13)
     instead of (13,), and every row is propagated in parallel on top of the
-    same `step_fn` jaxpr (one compile, reused for any batch size). This is the
-    scalable path -- run thousands of spacecraft/dispersed initial conditions
-    through the same fixed-step propagation for the cost of a handful of
-    XLA dispatches instead of a Python loop per trajectory."""
+    same `step_fn` jaxpr (one compile, reused for any batch size).
+
+    Basically taken from AA203 code
+    """
 
     step_fn = rigid_body_step_fn(dt, spacecraft)
     return jax.jit(jax.vmap(step_fn, in_axes=(None, 0)))
@@ -144,12 +144,13 @@ def simulate_batch(
     n_steps: int,
     spacecraft: Spacecraft,
 ):
-    """Propagate a batch of initial states (batch, 13) forward `n_steps` under
+    """
+    Propagate a batch of initial states (batch, 13) forward `n_steps` under
     rigid-body-under-gravity dynamics, all in parallel via vmap.
 
     Returns:
-        X: (n_steps + 1, batch, 13) state history
-        t: (n_steps + 1,) time history
+        X: (n_steps + 1, batch, 13)
+        t: (n_steps + 1,)
     """
     batched_step = vmap_rigid_body_step_fn(dt, spacecraft)
 
