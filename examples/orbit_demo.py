@@ -30,7 +30,7 @@ if __name__ == "__main__":
     dt = 0.1
     t0 = 0.0
     T = 2 * np.pi * np.sqrt(a**3 / MU_EARTH)
-    n_periods = 5
+    n_periods = 10
     n_steps = int(n_periods * T / dt)
 
     print("Simulating a Molniya-like orbit around Earth:")
@@ -69,8 +69,8 @@ if __name__ == "__main__":
     plt.title("Energy check (should be flat)")
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
-    plt.show(block=False)
+    plt.show()
 
-    plot_orbit(sim.X, t=sim.t, downsample=10)
+    plot_orbit(sim.X, t=sim.t, downsample_rate=10)
 
     input("Press Enter to exit")

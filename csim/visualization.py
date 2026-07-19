@@ -14,18 +14,25 @@ def _plot_trajectory(
     t: np.ndarray = None,
     slider: bool = True,
     downsample_rate: int | None = None,
+    max_frames: int = 300,
 ):
     """`width`/`height` in px; pass None for either to let Plotly fill its container instead of
     using a fixed size. `slider` adds a time slider (+ play/pause) that scrubs a marker along the
-    trajectory; `downsample_rate` controls how many of `r`'s rows become slider steps/frames
-    (defaults to roughly 200 evenly-spaced steps)."""
+    trajectory; `downsample_rate` controls how many of `r`'s rows get drawn (defaults to roughly
+    200 evenly-spaced points -- plotting every raw row of a long propagation is what makes this
+    slow). `max_frames` independently caps the number of slider/animation frames, since a small
+    `downsample_rate` on a long trajectory would otherwise generate one frame per plotted point."""
+    if downsample_rate is None:
+        downsample_rate = max(1, len(r) // 200)
+    r_plot = r[::downsample_rate]
+
     fig = go.Figure()
 
     # Plot trajectory
     fig.add_scatter3d(
-        x=r[:, 0],
-        y=r[:, 1],
-        z=r[:, 2],
+        x=r_plot[:, 0],
+        y=r_plot[:, 1],
+        z=r_plot[:, 2],
         mode="markers",
         marker=dict(size=1, color="blue"),
         name="Trajectory",
@@ -70,10 +77,10 @@ def _plot_trajectory(
     if slider:
         if t is None:
             t = np.arange(len(r))
-        if downsample_rate is None:
-            downsample_rate = max(1, len(r) // 200)
 
         step_indices = np.arange(0, len(r), downsample_rate)
+        if len(step_indices) > max_frames:
+            step_indices = step_indices[:: max(1, len(step_indices) // max_frames)]
         if step_indices[-1] != len(r) - 1:
             step_indices = np.append(step_indices, len(r) - 1)
 
@@ -173,6 +180,7 @@ def plot_orbit(
     t: np.ndarray = None,
     slider: bool = True,
     downsample_rate: int | None = None,
+    max_frames: int = 300,
 ):
     _plot_trajectory(
         r,
@@ -184,6 +192,7 @@ def plot_orbit(
         t=t,
         slider=slider,
         downsample_rate=downsample_rate,
+        max_frames=max_frames,
     )
 
 
@@ -196,6 +205,7 @@ def plot_rocket(
     t: np.ndarray = None,
     slider: bool = True,
     downsample_rate: int | None = None,
+    max_frames: int = 300,
 ):
     _plot_trajectory(
         r,
@@ -207,4 +217,5 @@ def plot_rocket(
         t=t,
         slider=slider,
         downsample_rate=downsample_rate,
+        max_frames=max_frames,
     )
