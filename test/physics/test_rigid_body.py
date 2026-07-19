@@ -195,6 +195,7 @@ class TestRigidBodyRk4Integration:
 
         assert np.array_equal(next_step, state)
 
+    @pytest.mark.slow
     def test_force(self):
         dt = 0.001
         t = 1

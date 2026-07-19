@@ -120,9 +120,9 @@ def r_to_surface_lla(r_ecef: np.ndarray):
 ####################################################################################################
 
 
-def dcm_rsw_eci(r_eci: np.ndarray, v_eci: np.ndarray) -> np.ndarray:
+def calc_dcm_rsw_eci(r_eci: np.ndarray, v_eci: np.ndarray) -> np.ndarray:
     """Radial/along-track/cross-track (RSW) frame DCM (ECI -> RSW):
-    `r_rsw = dcm_rsw_eci(r_eci, v_eci) @ r_eci`
+    `r_rsw = calc_dcm_rsw_eci(r_eci, v_eci) @ r_eci`
 
     Rows are the RSW basis vectors `[r_hat, s_hat, w_hat]`, each expressed in ECI. \\
     Vallado 4e p. 157-158 (`rv2rsw`)
@@ -139,7 +139,9 @@ def dcm_rsw_eci(r_eci: np.ndarray, v_eci: np.ndarray) -> np.ndarray:
     w_hat = w_vec / norm(w_vec)
     s_hat = np.cross(w_hat, r_hat)
 
-    return np.array([r_hat, s_hat, w_hat])
+    dcm_rsw_eci = np.array([r_hat, s_hat, w_hat])
+
+    return dcm_rsw_eci
 
 
 ################################################################################
@@ -385,6 +387,39 @@ def itrf_to_gcrs_matrices(
     PN = PN_matrix(t_tt, dX, dY)
 
     return PN, R, W
+
+
+def calc_dcm_eci_ecef(
+    xp: float,
+    yp: float,
+    jd_utc: float,
+    dX: float = 0,
+    dY: float = 0,
+    deltaUT1_s: float = 0,
+    deltaAT_s: float = 32,
+) -> np.ndarray:
+    """Combined ITRF (ECEF) -> GCRS (ECI) DCM: `r_eci = calc_dcm_eci_ecef @ r_ecef`
+
+    Single-matrix convenience wrapper around `itrf_to_gcrs_matrices` (`PN @ R @ W`) for
+    when you just want to transform a position and don't need the individual PN/R/W
+    matrices (e.g. for velocity, which needs `R` separately -- see `calc_v_tirs`).
+
+    - Obtain xp, yp, deltaUT1_s, dX, and dY from EOP data.
+
+    Args:
+        xp (float): Polar x coord. of polar motion of CIP in ITRS [rad]
+        yp (float): Polar y coord. of polar motion of CIP in ITRS [rad]
+        jd_utc (float): Julian date (UTC)
+        dX (float): X correction (from EOP) Defaults to 0.
+        dY (float): Y correction (from EOP) Defaults to 0.
+        deltaUT1_s (float): UTC to UT1 offset [s] Defaults to 0.
+        deltaAT_s (float): UTC to TAI offset [s] Defaults to 32.
+
+    Returns:
+        np.ndarray: 3x3 rotation matrix (ECEF -> ECI)
+    """
+    PN, R, W = itrf_to_gcrs_matrices(xp, yp, jd_utc, dX, dY, deltaUT1_s, deltaAT_s)
+    return PN @ R @ W
 
 
 def calc_v_tirs(

@@ -253,7 +253,7 @@ def coes_to_rv(
     # Velocity in perifocal frame
     v_pf = np.sqrt(mu / p) * np.array([-np.sin(ta), e + np.cos(ta), 0.0])
 
-    C = dcm_eci_pf(raan, i, aop)
+    C = calc_dcm_eci_pf(raan, i, aop)
 
     # Transform to ECI
     r_eci = C @ r_pf
@@ -262,7 +262,7 @@ def coes_to_rv(
     return r_eci, v_eci
 
 
-def dcm_eci_pf(raan: float, i: float, aop: float) -> np.ndarray:
+def calc_dcm_eci_pf(raan: float, i: float, aop: float) -> np.ndarray:
     """Perifocal-frame DCM, expressed in ECI (perifocal -> ECI): \\
     `R = R3(-raan) * R1(-i) * R3(-aop)` And when right-multiplying, it converts from perifocal to ECI.
 

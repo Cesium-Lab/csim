@@ -8,7 +8,7 @@ from csim.math.coes import (
     kelper_eq_ellipse,
     rv_to_coes,
     coes_to_rv,
-    dcm_eci_pf,
+    calc_dcm_eci_pf,
     CoesDegenExtraParams,
 )
 from csim.constants import DEG_TO_RAD, RAD_TO_DEG
@@ -316,7 +316,7 @@ class TestDcmEciPf:
         r_pf = r_mag * np.array([np.cos(ta), np.sin(ta), 0.0])
         v_pf = np.sqrt(MU_EARTH_KM / p) * np.array([-np.sin(ta), e + np.cos(ta), 0.0])
 
-        C = dcm_eci_pf(raan, i, aop)
+        C = calc_dcm_eci_pf(raan, i, aop)
 
         # Rotation matrix
         assert np.linalg.det(C) == pytest.approx(1, abs=1e-9)

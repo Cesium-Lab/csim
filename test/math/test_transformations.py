@@ -62,12 +62,12 @@ def test_r_to_lla_example_3_3():
 #########################################################################################################
 
 
-def test_dcm_rsw_eci_vallado():
+def test_calc_dcm_rsw_eci_vallado():
     """Vallado 4e p. 115 -- reuses the same r/v used in TestRvToCoes.test_vallado."""
     r = np.array([6524.834, 6862.875, 6448.296])  # km
     v = np.array([4.901327, 5.533756, -1.976341])  # km/s
 
-    C = Trans.dcm_rsw_eci(r, v)
+    C = Trans.calc_dcm_rsw_eci(r, v)
 
     # Rotation matrix
     assert np.linalg.det(C) == pytest.approx(1, abs=1e-9)
@@ -190,7 +190,7 @@ def test_vallado_itrf_PN():
 
 
 ##################################################
-#                       Position
+#                       Full
 ##################################################
 
 
@@ -208,13 +208,18 @@ def test_vallado_full_itrf():
     dY = -0.000136 * ARCSEC_TO_RAD
 
     PN, R, W = Trans.itrf_to_gcrs_matrices(xp, yp, jd, dX, dY, dUT1, dAT)
+    C = Trans.calc_dcm_eci_ecef(xp, yp, jd, dX, dY, dUT1, dAT)
 
     # Tests that determinant is 1
     assert np.linalg.det(PN @ R @ W) == pytest.approx(1, 1e-9)
+    assert np.linalg.det(C) == pytest.approx(1, 1e-9)
+
+
 
     # Transforms vector correctly
     r_gcrs = PN @ R @ W @ r_itrf
     assert np.allclose(r_gcrs, expected, rtol=1e-4)
+    assert np.allclose(C @ r_itrf, expected, rtol=1e-4)
 
 
 # TODO: velocity and acceleration
