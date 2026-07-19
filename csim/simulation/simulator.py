@@ -20,6 +20,10 @@ class Simulator:
     `step_fn` is free to be a jax-jit-compiled function (see rigid_body_step_fn) -- state
     history is still kept in a plain numpy array here, since the sequential Python loop
     driving it isn't itself a jax computation.
+
+    Can be driven a whole-trajectory-at-once via `simulate()`, or one step at a time via
+    `step()` -- the latter is what a closed-loop controller or a multi-body driver (calling
+    `step()` on several Simulator instances in turn each tick) should use.
     """
 
     def __init__(
@@ -33,8 +37,10 @@ class Simulator:
     ):
         """
         stop_fn: optional. Checked against the new state after each step; if it
-            returns True, simulate() stops early and trims self.X and self.t
+            returns True, the simulator stops advancing and (once `finalize()` is
+            called, or `simulate()` completes) trims self.X and self.t
         """
+        self.t0 = t0
         self.t_curr = t0
         self.dt = dt
         self.n_steps = n_steps
@@ -46,18 +52,45 @@ class Simulator:
         self.t = t0 + dt * np.arange(n_steps + 1)
         self.X[0] = state0
 
+        self.step_idx = 0
+        self.done = False
+
+    @property
+    def state(self) -> np.ndarray:
+        """Current state, i.e. the state at `self.t_curr`."""
+        return self.X[self.step_idx]
+
+    def step(self) -> np.ndarray:
+        """Advance the simulation by a single dt and return the new state and whether it is done"""
+        if self.done:
+            return self.state, self.done
+
+        next_state = self.step_fn(self.t_curr, self.state)
+        self.step_idx += 1
+        self.X[self.step_idx] = next_state
+        self.t_curr += self.dt
+
+        if self.step_idx >= self.n_steps or (
+            self.stop_fn is not None and self.stop_fn(next_state)
+        ):
+            self.done = True
+
+        return next_state, self.done
+
+    def finalize(self):
+        """Trim self.X and self.t down to the steps actually taken so far.
+
+        Called automatically at the end of `simulate()`; call it yourself after
+        driving the simulator manually with `step()` if you want the trimmed arrays.
+        """
+        self.X = self.X[: self.step_idx + 1]
+        self.t = self.t[: self.step_idx + 1]
+
     def simulate(self):
-        final_step = self.n_steps
-        for step in range(1, self.n_steps + 1):
-            self.X[step] = self.step_fn(self.t_curr, self.X[step - 1])
-            self.t_curr += self.dt
+        while not self.done:
+            self.step()
 
-            if self.stop_fn is not None and self.stop_fn(self.X[step]):
-                final_step = step
-                break
-
-        self.X = self.X[: final_step + 1]
-        self.t = self.t[: final_step + 1]
+        self.finalize()
 
 
 # Example step functions
