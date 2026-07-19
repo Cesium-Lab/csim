@@ -15,7 +15,7 @@ def propagate(dt: float, tmax: float, state0: np.ndarray, params: RigidBodyParam
     t = 0
     while t < tmax:
         state = rk4_func(t, dt, state, rigid_body_derivative, params)
-        state[6:10] /= np.linalg.norm(state[6:10])
+        state = state.at[6:10].set(state[6:10] / np.linalg.norm(state[6:10]))
         t += dt
     return state
 
@@ -454,7 +454,9 @@ class TestRigidBodyEnergy:
 
 
 def test_no_I():
-    params = RigidBodyParams(mass_kg=2, I=None, force_N=[1, 0, 0], torque_Nm=[0, 0, 0])
+    params = RigidBodyParams(
+        mass_kg=2, I=np.eye(3), force_N=[1, 0, 0], torque_Nm=[0, 0, 0]
+    )
 
     state = [
         0,

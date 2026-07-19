@@ -10,7 +10,7 @@ if __name__ == "__main__":
     n_steps = 100000
     state0 = np.array([6800e3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 
-    sc = Spacecraft(100, None)
+    sc = Spacecraft(100, np.eye(3))
     sim = Simulator(state0, t0, dt, n_steps, rigid_body_step_fn(dt, sc))
 
     sim.simulate()
