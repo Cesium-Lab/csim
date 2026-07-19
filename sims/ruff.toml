@@ -1,5 +1,0 @@
-target-version = "py312"
-
-[lint]
-# Single-letter physics variable names (r, v, w, ...) are idiomatic here.
-ignore = ["E741"]

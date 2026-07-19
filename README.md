@@ -1,12 +1,8 @@
-# Sims
-
-Copying my stuff from the trajectorylib and dronesim projects
+# csim
 
 
 Simulator
 - Cool part is having different simulators for different environments (rocket/drone, orbits)
-
-
 
 
 # Planning
