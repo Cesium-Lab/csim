@@ -39,14 +39,23 @@ if __name__ == "__main__":
     n_periods = 2
     n_steps = int(T / dt)  # one full orbit
 
-    print("Propagating a 300km-perigee ellipse out to lunar distance (Earth-only dynamics):")
-    print(f"  perigee alt: {r_p - R_EARTH:.0f} m, apogee: {r_a / 1e3:.0f} km, period: {T / 3600:.1f} hr")
+    print(
+        "Propagating a 300km-perigee ellipse out to lunar distance (Earth-only dynamics):"
+    )
+    print(
+        f"  perigee alt: {r_p - R_EARTH:.0f} m, apogee: {r_a / 1e3:.0f} km, period: {T / 3600:.1f} hr"
+    )
 
     sc = Spacecraft(mass=100, I=np.eye(3))
     sim = Simulator(state0, t0, dt, n_steps, rigid_body_step_fn(dt, sc))
     sim.simulate()
 
-    moon_here = CentralBody(name="Moon", radius=MOON.radius, color=MOON.color, center=[-EARTH_MOON_DISTANCE, 0, 0])
+    moon_here = CentralBody(
+        name="Moon",
+        radius=MOON.radius,
+        color=MOON.color,
+        center=[-EARTH_MOON_DISTANCE, 0, 0],
+    )
 
     plot_orbit(sim.X, t=sim.t, body=[EARTH, moon_here])
 

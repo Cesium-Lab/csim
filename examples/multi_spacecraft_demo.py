@@ -43,8 +43,13 @@ if __name__ == "__main__":
     for name, r_p, e, i_deg, raan_deg, aop_deg, ta_deg in ORBITS:
         a = (R_EARTH + r_p) / (1 - e)
         r_vec, v_vec = coes_to_rv(
-            a=a, e=e, i=i_deg * DEG_TO_RAD, raan=raan_deg * DEG_TO_RAD,
-            aop=aop_deg * DEG_TO_RAD, ta=ta_deg * DEG_TO_RAD, mu=MU_EARTH,
+            a=a,
+            e=e,
+            i=i_deg * DEG_TO_RAD,
+            raan=raan_deg * DEG_TO_RAD,
+            aop=aop_deg * DEG_TO_RAD,
+            ta=ta_deg * DEG_TO_RAD,
+            mu=MU_EARTH,
         )
         state0 = np.hstack((r_vec, v_vec, [1, 0, 0, 0], [0, 0, 0]))
 
@@ -53,7 +58,9 @@ if __name__ == "__main__":
         sim.simulate()
 
         alt = np.linalg.norm(sim.X[:, :3], axis=1) - R_EARTH
-        print(f"  {name}: a={a / 1e3:.0f} km, e={e}, i={i_deg:.0f} deg -- alt {alt.min() / 1e3:.0f} to {alt.max() / 1e3:.0f} km")
+        print(
+            f"  {name}: a={a / 1e3:.0f} km, e={e}, i={i_deg:.0f} deg -- alt {alt.min() / 1e3:.0f} to {alt.max() / 1e3:.0f} km"
+        )
 
         trajectories.append(sim.X)
 

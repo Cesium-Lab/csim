@@ -52,7 +52,9 @@ def _plot_trajectory(
             y=traj_plot[:, 1],
             z=traj_plot[:, 2],
             mode="markers",
-            marker=dict(size=1, color=_TRAJECTORY_COLORS[idx % len(_TRAJECTORY_COLORS)]),
+            marker=dict(
+                size=1, color=_TRAJECTORY_COLORS[idx % len(_TRAJECTORY_COLORS)]
+            ),
             name=f"Trajectory{suffix}",
         )
 

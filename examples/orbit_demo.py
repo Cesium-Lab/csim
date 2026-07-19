@@ -23,7 +23,14 @@ from csim.world import MU_EARTH, R_EARTH
 
 if __name__ == "__main__":
     # Molniya-like orbit: eccentric, high inclination
-    a, e, i, raan, aop, ta = 26600e3, 0.74, 63.4 * DEG_TO_RAD, 0.0, 270 * DEG_TO_RAD, 0.0
+    a, e, i, raan, aop, ta = (
+        26600e3,
+        0.74,
+        63.4 * DEG_TO_RAD,
+        0.0,
+        270 * DEG_TO_RAD,
+        0.0,
+    )
     r_vec, v_vec = coes_to_rv(a=a, e=e, i=i, raan=raan, aop=aop, ta=ta, mu=MU_EARTH)
     state0 = np.hstack((r_vec, v_vec, [1, 0, 0, 0], [0, 0, 0]))
 
@@ -34,8 +41,12 @@ if __name__ == "__main__":
     n_steps = int(n_periods * T / dt)
 
     print("Simulating a Molniya-like orbit around Earth:")
-    print(f"  a={a / 1e3:.0f} km, e={e}, i={i / DEG_TO_RAD:.1f} deg, raan={raan / DEG_TO_RAD:.1f} deg, aop={aop / DEG_TO_RAD:.1f} deg, ta={ta / DEG_TO_RAD:.1f} deg")
-    print(f"  orbital period: {T / 60:.1f} min -> propagating {n_periods} periods ({n_steps} steps at dt={dt}s)")
+    print(
+        f"  a={a / 1e3:.0f} km, e={e}, i={i / DEG_TO_RAD:.1f} deg, raan={raan / DEG_TO_RAD:.1f} deg, aop={aop / DEG_TO_RAD:.1f} deg, ta={ta / DEG_TO_RAD:.1f} deg"
+    )
+    print(
+        f"  orbital period: {T / 60:.1f} min -> propagating {n_periods} periods ({n_steps} steps at dt={dt}s)"
+    )
 
     sc = Spacecraft(mass=100, I=np.eye(3))
     sim = Simulator(state0, t0, dt, n_steps, rigid_body_step_fn(dt, sc))
@@ -55,12 +66,18 @@ if __name__ == "__main__":
 
     # Energy check: two-body + rigid-body dynamics conserve total energy, so this should
     # stay flat. Drift indicates integration error (too-large dt) or a dynamics bug.
-    energy = np.array([
-        calc_total_energy(sc.mass, sc.I, state[0:3], state[3:6], state[10:13], MU_EARTH)
-        for state in sim.X
-    ])
+    energy = np.array(
+        [
+            calc_total_energy(
+                sc.mass, sc.I, state[0:3], state[3:6], state[10:13], MU_EARTH
+            )
+            for state in sim.X
+        ]
+    )
     drift_pct = (energy - energy[0]) / abs(energy[0]) * 100
-    print(f"energy drift: {drift_pct.min():.2e}% to {drift_pct.max():.2e}% of initial energy")
+    print(
+        f"energy drift: {drift_pct.min():.2e}% to {drift_pct.max():.2e}% of initial energy"
+    )
 
     plt.figure(figsize=(10, 4))
     plt.plot(sim.t / 60, energy)
