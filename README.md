@@ -85,5 +85,10 @@ ruff check . --fix
 ruff format .
 ruff format
 
+pytest -m "not slow"
+
 
 ```
+
+# Ideas
+

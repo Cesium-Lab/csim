@@ -2,6 +2,7 @@ import jax
 import numpy as np
 import jax.numpy as jnp
 from typing import Callable
+from tqdm import tqdm
 
 from ..entities import Spacecraft
 from ..math import rk4_func, unit
@@ -87,8 +88,10 @@ class Simulator:
         self.t = self.t[: self.step_idx + 1]
 
     def simulate(self):
-        while not self.done:
-            self.step()
+        with tqdm(total=self.n_steps, desc="Simulating") as pbar:
+            while not self.done:
+                self.step()
+                pbar.update(1)
 
         self.finalize()
 
@@ -157,7 +160,7 @@ def simulate_batch(
     X[0] = states0
 
     t_curr = t0
-    for step in range(1, n_steps + 1):
+    for step in tqdm(range(1, n_steps + 1), desc="Simulating batch"):
         X[step] = batched_step(t_curr, X[step - 1])
         t_curr += dt
 
