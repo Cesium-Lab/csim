@@ -12,6 +12,7 @@ dependencies = [
     "numpy",
     "plotly",
     "jax",
+    "tqdm",
 ]
 
 [project.optional-dependencies]
